@@ -2,13 +2,14 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Upload } from "lucide-react";
+import { Upload, Download } from "lucide-react";
 
 const PdfUploader = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [inputFormat, setInputFormat] = useState("pdf");
   const [outputFormat, setOutputFormat] = useState("markdown");
+  const [convertedFile, setConvertedFile] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -16,6 +17,7 @@ const PdfUploader = () => {
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile && droppedFile.type === "application/pdf") {
       setFile(droppedFile);
+      setConvertedFile(null); // Reset converted file when new file is dropped
     } else {
       toast({
         title: "Invalid file type",
@@ -33,6 +35,7 @@ const PdfUploader = () => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile && selectedFile.type === "application/pdf") {
       setFile(selectedFile);
+      setConvertedFile(null); // Reset converted file when new file is selected
     } else {
       toast({
         title: "Invalid file type",
@@ -67,8 +70,10 @@ const PdfUploader = () => {
         throw new Error("Conversion failed");
       }
 
-      const result = await response.json();
-      console.log("Conversion Results:", result);
+      // Get the converted file content
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      setConvertedFile(url);
       
       toast({
         title: "Success",
@@ -83,6 +88,18 @@ const PdfUploader = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDownload = () => {
+    if (convertedFile) {
+      const link = document.createElement('a');
+      link.href = convertedFile;
+      link.download = `converted-document.${outputFormat}`; // Set the filename
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(convertedFile);
     }
   };
 
@@ -147,13 +164,24 @@ const PdfUploader = () => {
           </Select>
         </div>
 
-        <Button
-          onClick={handleUpload}
-          disabled={!file || isLoading}
-          className="w-full bg-[#0FA0CE] hover:bg-[#33C3F0] transition-colors"
-        >
-          {isLoading ? "Converting..." : "Convert File"}
-        </Button>
+        <div className="space-y-4">
+          <Button
+            onClick={handleUpload}
+            disabled={!file || isLoading}
+            className="w-full bg-[#0FA0CE] hover:bg-[#33C3F0] transition-colors"
+          >
+            {isLoading ? "Converting..." : "Convert File"}
+          </Button>
+
+          {convertedFile && (
+            <Button
+              onClick={handleDownload}
+              className="w-full bg-green-600 hover:bg-green-700 transition-colors"
+            >
+              <Download className="mr-2 h-4 w-4" /> Download Converted File
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
