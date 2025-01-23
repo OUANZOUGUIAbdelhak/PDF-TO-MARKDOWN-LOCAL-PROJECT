@@ -99,3 +99,57 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Nuclear Particles Animation */
+.nuclear-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, transparent 0%, #1A1F2C 70%);
+}
+
+.nuclear-particles::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at center, #33C3F0 1px, transparent 1px),
+    radial-gradient(circle at center, #33C3F0 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: particleAnimation 20s linear infinite;
+  opacity: 0.3;
+}
+
+@keyframes particleAnimation {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+/* Glowing Effects */
+.border-glow {
+  box-shadow: 0 0 10px #33C3F0;
+}
+
+/* Additional Animation for Upload Icon */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.upload-icon {
+  animation: float 3s ease-in-out infinite;
+}
